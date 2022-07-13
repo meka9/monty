@@ -1,25 +1,15 @@
-#ifndef _MONTY_H_
-#define _MONTY_H_
+#ifndef __MONTY_H__
+#define __MONTY_H__
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdarg.h>
 #include <string.h>
-#include <ctype.h>
+#include <sys/stat.h>
 
-typedef struct var
-{
-	int holder;
-	char check;
-}var_t;
-
-extern var_t variables;
-var_t variables;
-
+/*==========================================================================*/
+/*==========================     DATA STRUCTURES    ========================*/
+/*==========================================================================*/
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -27,48 +17,75 @@ var_t variables;
  * @next: points to the next element of the stack (or queue)
  *
  * Description: doubly linked list node structure
- * for stack, queues, LIFO, FIFO ALX Project
+ * for stack, queues, LIFO, FIFO Holberton project
  */
 typedef struct stack_s
 {
-        int n;
-        struct stack_s *prev;
-        struct stack_s *next;
+	int n;
+	struct stack_s *prev;
+	struct stack_s *next;
 } stack_t;
 
 /**
- * struct instruction_s - opcoode and its function
+ * struct instruction_s - opcode and its function
  * @opcode: the opcode
  * @f: function to handle the opcode
  *
  * Description: opcode and its function
- * for stack, queues, LIFO, FIFO ALX  Project
+ * for stack, queues, LIFO, FIFO Holberton project
  */
 typedef struct instruction_s
 {
-        char *opcode;
-        void (*f)(stack_t **stack, unsigned int line_number);
+	char *opcode;
+	void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-void _tokenizer(char *string, stack_t **stk, unsigned int linenum);
-void free_stk(stack_t **stk, unsigned int linenum);
-int check_digit(char *token);
-void _ops(char *token, stack_t **stk, unsigned int linenum);
-void push(stack_t **stk, unsigned int linenum);
-void pall(stack_t **stk, unsigned int linenum);
-void pint(stack_t **stk, unsigned int linenum);
-void pop(stack_t **stk, unsigned int linenum);
-void swap(stack_t **stk, unsigned int linenum);
-void add(stack_t **stk, unsigned int linenum);
-void nop(stack_t **stk, unsigned int linenum);
-void sub(stack_t **stk, unsigned int linenum);
-void _div(stack_t **stk, unsigned int linenum);
-void mul(stack_t **stk, unsigned int linenum);
-void mod(stack_t **stk, unsigned int linenum);
-void pchar(stack_t **stk, unsigned int linenum);
-void pstr(stack_t **stk, unsigned int linenum);
-void rotl(stack_t **stk, unsigned int linenum);
-void rotr(stack_t **stk, unsigned int linenum);
-void _queue(stack_t **stk, unsigned int linenum);
+/*=========================================================================*/
+/*=========================   OPCODE FUNCTIONS  ===========================*/
+/*=========================================================================*/
 
-#endif
+/* monty_main.c */
+int main(int ac, char **av);
+
+/* monty_free.c */
+void free_stack(stack_t **stack);
+
+/* monty_run.c */
+int monty_run(FILE *fd);
+char **tokening(char *line, char *delim);
+int empty_line(char *line, char *delims);
+
+/* monty_exec.c */
+int execute(char **token, stack_t **stack, unsigned int line_num);
+int monty_push(stack_t **stack, char **token, unsigned int line_num);
+int monty_pushq(stack_t **stack, char **token, unsigned int line_num);
+void monty_pall(stack_t **stack, unsigned int line_num);
+
+/* monty_pool1.c */
+void monty_pint(stack_t **stack, unsigned int line_num);
+void monty_pop(stack_t **stack, unsigned int line_num);
+void monty_swap(stack_t **stack, unsigned int line_num);
+void monty_sub(stack_t **stack, unsigned int line_num);
+void monty_add(stack_t **stack, unsigned int line_num);
+
+/* monty_pool2.c */
+void monty_mul(stack_t **stack, unsigned int line_number);
+void monty_div(stack_t **stack, unsigned int line_number);
+void monty_mod(stack_t **stack, unsigned int line_number);
+void monty_pchar(stack_t **stack, unsigned int line_number);
+void monty_pstr(stack_t **stack, unsigned int line_number);
+
+/* monty_pool3.c */
+void monty_rotl(stack_t **stack, unsigned int line_number);
+void monty_rotr(stack_t **stack, unsigned int line_number);
+
+/*=========================================================================*/
+/*=========================        ERRORS       ===========================*/
+/*=========================================================================*/
+
+/* monty_errors.c */
+int usage_error(int flag);
+int open_error(char *filename);
+int f_errors(int flag, unsigned int line_num);
+
+#endif /* __MONTY_H__ */
