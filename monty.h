@@ -4,12 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <string.h>
-#include <sys/stat.h>
 
-/*==========================================================================*/
-/*==========================     DATA STRUCTURES    ========================*/
-/*==========================================================================*/
+#define STACK 0
+#define QUEUE 1
+#define DELIMS " \n\t\a\b"
+
+/* GLOBAL OPCODE TOKENS */
+extern char **op_toks;
+
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -40,52 +42,48 @@ typedef struct instruction_s
 	void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-/*=========================================================================*/
-/*=========================   OPCODE FUNCTIONS  ===========================*/
-/*=========================================================================*/
-
-/* monty_main.c */
-int main(int ac, char **av);
-
-/* monty_free.c */
+/* PRIMARY INTERPRETER FUNCTIONS */
 void free_stack(stack_t **stack);
+int init_stack(stack_t **stack);
+int check_mode(stack_t *stack);
+void free_tokens(void);
+unsigned int token_arr_len(void);
+int run_monty(FILE *script_fd);
+void set_op_tok_error(int error_code);
 
-/* monty_run.c */
-int monty_run(FILE *fd);
-char **tokening(char *line, char *delim);
-int empty_line(char *line, char *delims);
-
-/* monty_exec.c */
-int execute(char **token, stack_t **stack, unsigned int line_num);
-int monty_push(stack_t **stack, char **token, unsigned int line_num);
-int monty_pushq(stack_t **stack, char **token, unsigned int line_num);
-void monty_pall(stack_t **stack, unsigned int line_num);
-
-/* monty_pool1.c */
-void monty_pint(stack_t **stack, unsigned int line_num);
-void monty_pop(stack_t **stack, unsigned int line_num);
-void monty_swap(stack_t **stack, unsigned int line_num);
-void monty_sub(stack_t **stack, unsigned int line_num);
-void monty_add(stack_t **stack, unsigned int line_num);
-
-/* monty_pool2.c */
-void monty_mul(stack_t **stack, unsigned int line_number);
+/* OPCODE FUNCTIONS */
+void monty_push(stack_t **stack, unsigned int line_number);
+void monty_pall(stack_t **stack, unsigned int line_number);
+void monty_pint(stack_t **stack, unsigned int line_number);
+void monty_pop(stack_t **stack, unsigned int line_number);
+void monty_swap(stack_t **stack, unsigned int line_number);
+void monty_add(stack_t **stack, unsigned int line_number);
+void monty_nop(stack_t **stack, unsigned int line_number);
+void monty_sub(stack_t **stack, unsigned int line_number);
 void monty_div(stack_t **stack, unsigned int line_number);
+void monty_mul(stack_t **stack, unsigned int line_number);
 void monty_mod(stack_t **stack, unsigned int line_number);
 void monty_pchar(stack_t **stack, unsigned int line_number);
 void monty_pstr(stack_t **stack, unsigned int line_number);
-
-/* monty_pool3.c */
 void monty_rotl(stack_t **stack, unsigned int line_number);
 void monty_rotr(stack_t **stack, unsigned int line_number);
+void monty_stack(stack_t **stack, unsigned int line_number);
+void monty_queue(stack_t **stack, unsigned int line_number);
 
-/*=========================================================================*/
-/*=========================        ERRORS       ===========================*/
-/*=========================================================================*/
+/* CUSTOM STANDARD LIBRARY FUNCTIONS */
+char **strtow(char *str, char *delims);
+char *get_int(int n);
 
-/* monty_errors.c */
-int usage_error(int flag);
-int open_error(char *filename);
-int f_errors(int flag, unsigned int line_num);
+/* ERROR MESSAGES & ERROR CODES */
+int usage_error(void);
+int malloc_error(void);
+int f_open_error(char *filename);
+int unknown_op_error(char *opcode, unsigned int line_number);
+int no_int_error(unsigned int line_number);
+int pop_error(unsigned int line_number);
+int pint_error(unsigned int line_number);
+int short_stack_error(unsigned int line_number, char *op);
+int div_error(unsigned int line_number);
+int pchar_error(unsigned int line_number, char *message);
 
 #endif /* __MONTY_H__ */
