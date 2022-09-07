@@ -1,97 +1,86 @@
 #include "monty.h"
 
 /**
- * main - main function
- * @argc: argument counts
- * @argv: arguments passed
- * Return: success
- */
-int main(int argc, char **argv)
-{
-	FILE *file;
-	char *buff = NULL, *string;
-	size_t s = 0;
-	unsigned int linenum = 1;
-	stack_t *stk = NULL;
-
-	variables.check = 0;
-
-	if (argc != 2)
-	{
-		printf("USAGE: monty file\n");
-		exit(EXIT_FAILURE);
-	}
-	file = fopen(argv[1], "r");
-	if (file == NULL)
-	{
-		printf("Error: Can't open file %s\n", argv[1]);
-		exit(EXIT_FAILURE);
-	}
-	while (getline(&buff, &s, file) != -1)
-	{
-		if (*buff != '\n')
-		{
-			string = strtok(buff, "\n");
-			_tokenizer(string, &stk, linenum);
-		}
-		linenum++;
-	}
-	fclose(file);
-	free(buff);
-	if (stk != NULL)
-		free_stk(&stk, linenum);
-	return (EXIT_SUCCESS);
-}
-
-/**
- * _tokenizer - function to tokenize strings and commands
- * @string: string to be tokenized
- * @stk: pointer to the stack
- * @linenum: line numbers
+ * main - monty interperter
+ * @ac: the number of arguments
+ * @av: the arguments
  * Return: void
  */
-void _tokenizer(char *string, stack_t **stk, unsigned int linenum)
+int main(int ac, char *av[])
 {
-	char *token;
-	char *tokens;
+	stack_t *stack = NULL;
+	static char *string[1000] = {NULL};
+	int n = 0;
+	FILE *fd;
+	size_t bufsize = 1000;
 
-	token = strtok(string, " ");
-	if (token == NULL || *token == ' ' || *token == '\n' || *token == '#')
-		return;
-	if (strcmp(token, "push") == 0)
+	if (ac != 2)
 	{
-		tokens = token;
-		token = strtok(NULL, " ");
-		if (!check_digit(token))
-		{
-			printf("L%d: usage: push integer\n", linenum);
-			free_stk(stk, linenum);
-			exit(EXIT_FAILURE);
-		}
-		variables.holder = atoi(token);
-		_ops(tokens, stk, linenum);
+		fprintf(stderr, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
 	}
-	else
-		_ops(token, stk, linenum);
+	fd = fopen(av[1], "r");
+	if (fd == NULL)
+	{
+		fprintf(stderr, "Error: Can't open file %s\n", av[1]);
+		exit(EXIT_FAILURE);
+	}
+
+
+	for (n = 0; getline(&(string[n]), &bufsize, fd) > 0; n++)
+		;
+	execute(string, stack);
+	free_list(string);
+	fclose(fd);
+	return (0);
 }
 
 /**
- * check_digit - checks if string is a number
- * @token: string to check
- * Return: 1 if number, 0 if not
+ * execute - executes opcodes
+ * @string: contents of file
+ * @stack: the list
+ * Return: void
  */
-int check_digit(char *token)
+
+void execute(char *string[], stack_t *stack)
 {
-	if (token == NULL)
-		return (0);
-	if (*token == '-')
-		token++;
-	while (*token != '\0')
+	int ln, n, i;
+
+	instruction_t st[] = {
+		{"pall", pall},
+		{"pint", pint},
+		{"add", add},
+		{"swap", swap},
+		{"pop", pop},
+		{"null", NULL}
+	};
+
+	for (ln = 1, n = 0; string[n + 1]; n++, ln++)
 	{
-		if (!isdigit(*token))
-			return (0);
-		token++;
+		if (_strcmp("push", string[n]))
+			push(&stack, ln, pushint(string[n], ln));
+		else if (_strcmp("nop", string[n]))
+			;
+		else
+		{
+			i = 0;
+			while (!_strcmp(st[i].opcode, "null"))
+			{
+				if (_strcmp(st[i].opcode, string[n]))
+				{
+					st[i].f(&stack, ln);
+					break;
+				}
+				i++;
+			}
+			if (_strcmp(st[i].opcode, "null") && !_strcmp(string[n], "\n"))
+			{
+				fprintf(stderr, "L%u: unknown instruction %s", ln, string[n]);
+				if (!nlfind(string[n]))
+					fprintf(stderr, "\n");
+				exit(EXIT_FAILURE);
+			}
+		}
 	}
-	token++;
-	return (1);
+	free_stack(stack);
 }
